@@ -1,0 +1,69 @@
+CREATE TABLE Korisnik(
+k_ime INT PRIMARY KEY,
+ime VARCHAR(50), 
+prezime VARCHAR(50), 
+tip VARCHAR(50), 
+pretplata DECIMAL(10,2), 
+datum_reg VARCHAR(10), 
+tel_broj VARCHAR(12), 
+email VARCHAR(30),
+CONSTRAINT chk_datum_reg CHECK (datum_reg >= '2023-01-01' AND datum_reg <= '2024-12-31')
+);
+
+CREATE TABLE Premium_korisnik(
+k_ime INT PRIMARY KEY, 
+datum VARCHAR(10), 
+procent_popust INT DEFAULT 20,
+CONSTRAINT fk_premium_korisnik FOREIGN KEY (k_ime) REFERENCES Korisnik (k_ime) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE Profil(
+k_ime INT, 
+ime VARCHAR(50), 
+datum VARCHAR(10),
+CONSTRAINT pk_profil PRIMARY KEY(k_ime,ime),
+CONSTRAINT fk_profil FOREIGN KEY (k_ime) REFERENCES Korisnik(k_ime)
+);
+
+CREATE TABLE Video_zapis(
+naslov VARCHAR(50) PRIMARY KEY, 
+jazik VARCHAR(40) DEFAULT "English", 
+vremetraenje DECIMAL(2,2), 
+datum_d VARCHAR(10), 
+datum_p VARCHAR(10),
+CONSTRAINT chk_datum_videoZapis CHECK (datum_d >= datum_p)
+);
+
+CREATE TABLE Video_zapis_zanr(
+naslov VARCHAR(50),
+zanr VARCHAR(30),
+CONSTRAINT pk_videoZapisZanr PRIMARY KEY(naslov,zanr),
+CONSTRAINT fk_videoZapisZanr FOREIGN KEY (naslov) REFERENCES Video_zapis(naslov)
+);
+
+CREATE TABLE Lista_zelbi(
+naslov VARCHAR(50), 
+k_ime INT, 
+ime VARCHAR(50),
+CONSTRAINT pk_lista_zelbi PRIMARY KEY (naslov,k_ime,ime),
+CONSTRAINT fk_listaZelbiNaslov FOREIGN KEY (naslov) REFERENCES Video_zapis(naslov),
+CONSTRAINT fk_listaZelbiKorisnik FOREIGN KEY (k_ime,ime) REFERENCES Profil(k_ime,ime)
+);
+
+CREATE TABLE Preporaka(
+ID INT PRIMARY KEY, 
+k_ime_od INT, 
+k_ime_na INT, 
+naslov VARCHAR(50), 
+datum VARCHAR(10), 
+komentar VARCHAR(250) NOT NULL, 
+ocena INT,
+CONSTRAINT fk_preporaka_naslov FOREIGN KEY (naslov) REFERENCES Video_zapis(naslov),
+CONSTRAINT fk_preporaka_k_ime_od FOREIGN KEY (k_ime_od) REFERENCES Korisnik(k_ime),
+CONSTRAINT fk_preporaka_k_ime_na FOREIGN KEY (k_ime_na) REFERENCES Korisnik(k_ime),
+CONSTRAINT chk_ocena CHECK (OCENA > 0 AND OCENA <6),
+CONSTRAINT chk_datum_preporaka CHECK (datum > "7-12-2022")
+);
+
+ALTER TABLE Preporaka ALTER COLUMN naslov SET DEFAULT 'Deleted'
+
