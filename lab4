@@ -1,0 +1,90 @@
+SELECT k.ime, k.prezime
+FROM Korisnik k
+JOIN Preporaka p ON k.k_ime = p.k_ime_od
+JOIN Video_zapis v ON p.naslov = v.naslov
+WHERE v.vremetraenje > 120 AND p.ocena >= 4
+AND k.k_ime IN (SELECT k_ime FROM Premium_korisnik)
+ORDER BY k.datum_reg ASC;
+
+SELECT p.k_ime_od, COUNT(p.naslov) AS broj_preporaka
+FROM Preporaka p
+GROUP BY p.k_ime_od
+ORDER BY COUNT(p.naslov) DESC
+LIMIT 1;
+
+SELECT pr.ime, AVG(p.ocena) AS proseczna_ocena
+FROM Profil pr
+JOIN Lista_zelbi lz ON pr.k_ime = lz.k_ime
+JOIN Preporaka p ON lz.naslov = p.naslov
+GROUP BY pr.ime;
+
+SELECT vz.zanr, COUNT(p.ID) AS broj_preporaka
+FROM Video_zapis_zanr vz
+JOIN Preporaka p ON vz.naslov = p.naslov
+WHERE p.komentar LIKE '%interesting%'
+GROUP BY vz.zanr
+ORDER BY broj_preporaka DESC;
+
+SELECT v.naslov, v.vremetraenje, COUNT(DISTINCT pr.k_ime) AS broj_profili
+FROM Video_zapis v
+JOIN Lista_zelbi lz ON v.naslov = lz.naslov
+JOIN Profil pr ON lz.k_ime = pr.k_ime
+GROUP BY v.naslov, v.vremetraenje
+HAVING COUNT(DISTINCT pr.k_ime) >= 2;
+
+SELECT DISTINCT k.ime, k.prezime
+FROM Korisnik k
+JOIN Preporaka p ON k.k_ime = p.k_ime_od
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM Lista_zelbi lz
+    JOIN Profil pr ON lz.k_ime = pr.k_ime
+    WHERE pr.k_ime = k.k_ime AND lz.naslov = p.naslov
+);
+================ 3 ZADACA =======================
+```sql
+-- 3
+SELECT p.ime, AVG(ao) AS po_profil
+FROM Profil p
+JOIN Lista_zelbi lz ON p.k_ime = lz.k_ime AND p.ime = lz.ime
+JOIN (
+    SELECT naslov, AVG(ocena) AS ao
+    FROM Preporaka
+    GROUP BY naslov
+    ) A 
+    ON A.naslov = lz.naslov
+GROUP BY p.ime
+
+
+--4
+SELECT zanr, COUNT(*) AS Broj_Preporaki
+FROM Video_zapis VZ
+JOIN Video_zapis_zanr VZZ ON VZ.naslov = VZZ.naslov
+JOIN Preporaka P ON VZ.naslov = P.naslov
+WHERE P.komentar LIKE '%interesting%'
+GROUP BY zanr
+ORDER BY 2 DESC
+
+
+-- 5
+WITH Najmalku_dva AS (
+  SELECT naslov
+  FROM Lista_zelbi
+  GROUP BY naslov
+  HAVING COUNT(DISTINCT ime) > 1
+)
+
+SELECT VZ.naslov, VZ.vremetraenje, COUNT(*) AS Broj_preporaki
+FROM Najmalku_dva ND
+JOIN Video_zapis VZ ON ND.naslov = VZ.naslov
+JOIN Preporaka P ON VZ.naslov = P.naslov
+GROUP BY VZ.naslov
+
+
+-- 6
+SELECT K.ime
+FROM Preporaka P
+LEFT OUTER JOIN Lista_zelbi LZ ON P.k_ime_od = LZ.k_ime
+JOIN Korisnik K ON P.k_ime_od = K.k_ime
+WHERE LZ.naslov IS NULL
+```
